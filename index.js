@@ -1,7 +1,21 @@
 var coins = get_Cookies_array();
-var text  = document.getElementById("diff");
 
+create_table();
+
+console.log(document.cookie)
 console.log(coins)
+
+load_coin_list();
+
+function load_coin_list(){
+  let list = document.getElementById('list');
+  for(i = 0; i < values.length; i++){
+    let option = document.createElement('option');
+    option.setAttribute('value', values[i]);
+    option.innerHTML = values[i];
+    list.appendChild(option);
+  }
+}
 
 
 function add_coin(coin){
@@ -22,24 +36,30 @@ function add_coin(coin){
 
   updateCookie(coin, amount, buyPrice);
 
-  text.innerHTML += coins[coins.length - 1] + '<br>'
-  // console.log('Request for : ' + coin + 'USDT');
-  // fetch('https://api.binance.com/api/v1/ticker/price?symbol=' + coin + 'USDT')
-  // .then(response=>response.json())
-  // .then(data => console.log(data))
+  console.log('Request for : ' + coin + 'USDT');
+  fetch('https://api.binance.com/api/v1/ticker/price?symbol=' + coin + 'USDT')
+  .then(response=>response.json())
+  .then(data => add_row(data.price));
 }
 
-set_text();
+function add_row(cur_price){
+  let tr = document.createElement('tr');
+  for(i = 0; i < 3; i++){
+    let td = document.createElement('td');
+    td.innerHTML = coins[coins.length - 1][i];
+    tr.appendChild(td);
+  }
+  let td = document.createElement('td');
+  td.innerHTML = cur_price;
+  tr.appendChild(td);
+  document.getElementById('table').appendChild(tr);
 
+  td = document.createElement('td');
+  td.innerHTML = (cur_price -coins[coins.length - 1][2]) * coins[coins.length-1][1];
+  tr.appendChild(td);
+  document.getElementById('table').appendChild(tr);
 
-function set_text(){
-  text.innerHTML = "COIN AMOUNT BUY PRICE<br>"
-  if(coins)
-    for(let i = 0; i < coins.length; i++)
-      text.innerHTML += coins[i] + '<br>';
-  
 }
-
 
 var add_button = document.getElementById('add');
 
@@ -60,10 +80,7 @@ function updateCookie(coin, amount, price){
 }
 
 function delete_cookies(){
-  document.cookie.split(";")
-  .forEach(function(c) { document.cookie = c.replace(/^ +/, "")
-  .replace(/=.*/, "=;expires=" + new Date()
-  .toUTCString() + ";path=/"); });
+  document.cookie = "coins=";
 }
 
 function get_Cookies_array(){
@@ -79,5 +96,34 @@ function get_Cookies_array(){
     for (let i = 0; i < cookies.length; i++)
       cookies[i] = cookies[i].split(':');
     return cookies;
+  }
+}
+
+async function create_table(){
+  table = document.getElementById('table');
+  if(!coins)
+    return;
+
+  for(let i = 0; i < coins.length; i++){
+    let tr = document.createElement('tr');
+    for(j = 0; j < 3; j++){
+      let td = document.createElement('td');
+      td.innerHTML = coins[i][j];
+      tr.appendChild(td);
+    }
+    console.log('Request for : ' + coins[i][0] + 'USDT');
+    let cur_price = await fetch('https://api.binance.com/api/v1/ticker/price?symbol=' +  coins[i][0] + 'USDT')
+    .then(response=>response.json())
+    .then(data=> data.price);
+
+    let td = document.createElement('td');
+    td.innerHTML = cur_price;
+    tr.appendChild(td);
+
+    td = document.createElement('td');
+    td.innerHTML = (cur_price - coins[i][2]) * coins[i][1];
+    tr.appendChild(td);
+
+    table.appendChild(tr);
   }
 }
